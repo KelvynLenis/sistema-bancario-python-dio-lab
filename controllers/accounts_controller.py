@@ -1,20 +1,17 @@
-from models.accounts import accounts
-from constants import WITHDRAW_LIMIT, WITHDRAW_COUNT_LIMIT
+from models.accounts import accounts, Account
+from controllers.client_controller import get_client
+from models.current_account import Current_Account
+from models.deposit import Deposit
+from models.withdraw import Withdraw
+# from constants import WITHDRAW_LIMIT, WITHDRAW_COUNT_LIMIT
 
 
-def create_account(client, agency='0001'):
+def create_account(cpf):
   account_number = len(accounts)
 
   acc_number_increased = account_number + 1
 
-  account = {
-    "client": client,
-    "account_number": acc_number_increased,
-    "agency": agency,
-    "balance": 0,
-    "transaction_history": [],
-    "withdraw_count": 0
-  }
+  account = Current_Account(acc_number_increased, cpf)
 
   accounts.append(account)
 
@@ -25,106 +22,55 @@ def list_accounts():
 
 def get_account(cpf, account_number):
   for account in accounts:
-    if account['client'] == cpf and account['account_number'] == account_number:
+    if account.client == cpf and account.account_number == account_number:
       return account
 
   return None
 
-def print_extract(balance, /, *, transaction_history):
+def print_extract(account):
   print("")
-  print("-"*20)
-  print(f"Saldo total: R$ {balance:.2f}")
-  print("-"*20)
 
-  if len(transaction_history) == 0:
-    print("Nenhuma transação realizada!")
-    print("")
+  transactions = account.history.transactions
+
+  if not transactions:
+    print("Nenhuma transação realizada.")
+    return
   else:
-    print("Histórico de transações:")
-    print("")
+    print("Extrato de transações:")
+    for transaction in transactions:
+      print(f'{transaction["type"]} de R${transaction["value"]}')
 
-    for transaction in transaction_history:
+  print("-"*20)
+  print(f"Saldo total: R$ {account.balance:.2f}")
+  print("-"*20)
+  
 
-      if transaction['type'] == "deposit":
-        print(f"Saldo antigo:   R$ {transaction['Previous balance']:.2f}")
-        print(f"Depósito:   +R$ {transaction['Value deposited']:.2f}")
-        print(f"SALDO ATUAL: R$ {transaction['Current balance']:.2f}")
+def deposit(account, value, /):
+  transacao = Deposit(value)
 
-      else:
-        print(f"Saldo antigo:    R$ {transaction['Previous balance']:.2f}")
-        print(f"Valor do saque: -R$  {transaction['Value withdrew']:.2f}")
-        print(f"SALDO ATUAL:     R$ {transaction['Current balance']:.2f}")
+  client = get_client(account.client)
 
-      print("")
-    print("-"*20)
-
-def deposit(balance, value, transaction_history, /):
-  if value < 0:
-    print("-"*20)
-    print("Valor inválido!")
-    print("-"*20)
+  if not client:
+    print("Cliente não encontrado")
     return
 
-  balance += value
-
-  transaction_dict = {
-    "Current balance": balance,
-    "Previous balance": balance-value,
-    "Value deposited": value,
-    "type": "deposit"
-  }
-
-  transaction_history.append(transaction_dict)
+  client.make_transaction(account, transacao)
 
   print("")
   print("-"*20)
   print("Saldo atualizado com sucesso!")
   print("-"*20)
 
-  return [balance, transaction_history]
-
-def withdraw(*, balance, value, transaction_history, withdraw_count):
-  if balance == 0:
-    print("-"*20)
-    print("Não há saldo disponível para saque!")
-    print("-"*20)
-    return
-  elif withdraw_count == WITHDRAW_COUNT_LIMIT:
-    print("-"*20)
-    print("Limite de saques diários atingido!")
-    print("-"*20)
-    return
-  elif value > WITHDRAW_LIMIT:
-    print("-"*20)
-    print(f"Valor máximo de saque diário é de R$ {WITHDRAW_LIMIT:.2f}!")
-    print("-"*20)
-    return
-  elif value > balance:
-    print("-"*20)
-    print("Saldo insuficiente!")
-    print("-"*20)
+def withdraw(*, account, value):  
+  transacao = Withdraw(value)
+  
+  client = get_client(account.client)
+  if not client:
+    print("Cliente não encontrado")
     return
   
-  balance -= value
+  client.make_transaction(account, transacao)
 
-  transaction_dict = {
-    "Current balance": balance,
-    "Previous balance": balance+value,
-    "Value withdrew": value,
-    "type": "withdraw"
-  }
-
-  transaction_history.append(transaction_dict)
-
-  withdraw_count += 1
-  print("")
-  print("-"*20)
-  print("Saque realizado com sucesso!")
-  print(f"Saldo antigo: {balance + value}")
-  print(f"Saldo atual: {balance}")
-  print("-"*20)
-
-  return [balance, transaction_history, withdraw_count]
  
 def delete_account(cpf, account_number):
   for account in accounts:

@@ -1,4 +1,6 @@
+from models.natural_person import Natural_Person
 from models.clients import clients
+
 from utils.validator import validate_cpf, validate_address, validate_name
 
 def create_client(name, birthday, cpf, address):
@@ -28,12 +30,7 @@ def create_client(name, birthday, cpf, address):
       print("-"*20)
       return
     
-  client = {
-    "name": name,
-    "birthday": birthday,
-    "cpf": cpf,
-    "address": address
-  }
+  client = Natural_Person(name=name, birthday=birthday, cpf=cpf, address=address)
 
   clients.append(client)
 
@@ -55,3 +52,10 @@ def delete_client(cpf):
 
   return False
 
+
+def get_client(cpf):
+  for client in clients:
+    if client.cpf == cpf:
+      return client
+
+  return None

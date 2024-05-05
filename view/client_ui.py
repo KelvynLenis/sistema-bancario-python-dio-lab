@@ -18,7 +18,13 @@ def render_client_ui():
       print("Exemplo de endereço: Rua, 0, Bairro, Cidade, Estado")
       address = input("Endereço: ")
 
-      create_client(name=name, birthday=birthday, cpf=cpf, address=address)
+      client = create_client(name, birthday, cpf, address)
+
+      if client:
+        print("-"*20)
+        print("Cliente cadastrado com sucesso!")
+        print("-"*20)
+
 
     elif option == "2":
       print("-"*20)
@@ -28,10 +34,10 @@ def render_client_ui():
       clients = get_clients()
 
       for client in clients:
-        print(f"Nome: {client['name']}")
-        print(f"Data de nascimento: {client['birthday']}")
-        print(f"CPF: {client['cpf']}")
-        print(f"Endereço: {client['address']}")
+        print(f"Nome: {client.name}")
+        print(f"Data de nascimento: {client.birthday}")
+        print(f"CPF: {client.cpf}")
+        print(f"Endereço: {client.address}")
         print("-"*20)
 
     elif option == "3":
@@ -47,7 +53,7 @@ def render_client_ui():
 
       for account in all_accounts:
         if account['client'] == cpf:
-          delete_account(cpf, account['account_number'])
+          delete_account(cpf, account.account_number)
 
       if has_deleted:
         print("-"*20)

@@ -17,10 +17,9 @@ def render_account_ui():
       print("Cadastro de conta corrente")
       print("-"*20)
 
-      client = input("Digite o CPF do cliente: ")
+      cpf = input("Digite o CPF do cliente: ")
 
-      account = create_account(client)
-
+      account = create_account(cpf)
 
       if account:
         print("-"*20)
@@ -53,7 +52,7 @@ def render_account_ui():
       accounts = list_accounts()
 
       for account in accounts:
-        print(f"Conta: {account['agency']}-{account['account_number']} | Cliente: {account['client']} | Saldo: R$ {account['balance']:.2f}")
+        print(f"Conta: {account.agency}-{account.account_number} | Cliente: {account.client} | Saldo: R$ {account.balance:.2f}")
         
     elif option == "4":
       print("Deletar conta corrente")
@@ -92,18 +91,18 @@ def render_account_options(account):
     option = input("Escolha uma opção: ")
 
     if option == "1":
-      print_extract(account.get("balance"), transaction_history=account.get("transaction_history"))
+      print_extract(account)
+
     elif option == "2":
       value = float(input("Digite o valor do depósito: "))
+      
+      deposit(account, value)
 
-      balance, transaction_history = deposit(account.get("balance"), value, account.get("transaction_history"))
-
-      account.update({"balance": balance, "transaction_history": transaction_history})
     elif option == "3":
       value = float(input("Digite o valor do saque: "))
-      balance, transaction_history, withdraw_count = withdraw(balance=account.get("balance"), value=value, transaction_history=account.get("transaction_history"), withdraw_count=account.get("withdraw_count"))
-    
-      account.update({"balance": balance, "transaction_history": transaction_history, "withdraw_count": withdraw_count})
+
+      withdraw(account=account, value=value)    
+
     elif option == "0":
       break
     else:
